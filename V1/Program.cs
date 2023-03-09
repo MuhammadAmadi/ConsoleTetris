@@ -61,39 +61,64 @@ char[,] Field(in char[,] fd, char[,] form)
     char[,] field = new char[fd.GetLength(0), fd.GetLength(1)];
     Rewrite(ref field, fd);
     bool check = true;
-    int x = (byte)(field.GetLength(1) / 2 - form.GetLength(1) / 2),
+    int x = field.GetLength(1) / 2 - form.GetLength(1) / 2,
         y = default,
-        currX,
-        curry;
+        speedDef = 500,
+        speed = speedDef;
     ConsoleKeyInfo key = new ConsoleKeyInfo();
     while (check)
     {
+
+        Thread.Sleep(speed);
         while (Console.KeyAvailable)
             key = Console.ReadKey(true);
-
-        currX = x;
-        curry = y;
 
         switch (key.Key)
         {
             case ConsoleKey.A:
-                x--;
+                if (YouCanMove(field, form, y, x - 1))
+                {
+                    x--;
+                    speed = speed / 30;
+                }
+                else
+                    goto default;
                 break;
 
             case ConsoleKey.D:
-                x++;
+                if (YouCanMove(field, form, y, x + 1))
+                {
+                    x++;
+                    speed = speed / 30;
+                }
+                else
+                    goto default;
                 break;
+            case ConsoleKey.S:
+                check = YouCanMove(field, form, y + 1, x);
+                if (check)
+                {
+                    y++;
+                    speed = speed / 30;
+                }
+                break;
+            default:
+                check = YouCanMove(field, form, y + 1, x);
+                if (check)
+                {
+                    y++;
+                    speed = speedDef;
+                }
+                break;
+
         }
         key = default;
-        //y++;
-        check = YouCanMove(field, form, y + 1, x);
-        if (check) y++;
+
         Move(ref field, form, y, x);
         Print(field);
 
         if (check) Move(ref field, form, y, x, check);
 
-        Thread.Sleep(500);
     }
     return field;
 
