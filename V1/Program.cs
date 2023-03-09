@@ -19,7 +19,8 @@ bool YouCanMove(in char[,] field, in char[,] form, int yOs, int xOs)
 
 void Rewrite(ref char[,] rewritableArray, in char[,] copiedArray)
 {
-    for (int i = 0; i < rewritableArray.GetLength(0); i++)
+
+    for (int i = 0; i < copiedArray.GetLength(0); i++)
     {
         for (int j = 0; j < copiedArray.GetLength(1); j++)
         {
@@ -43,6 +44,27 @@ void Move(ref char[,] field, in char[,] form, int yOs, int xOs, bool clear = fal
     }
 }
 
+char[,] Rotation(in char[,] form, bool rotate = true)
+{
+    int x = 0, y = 1;
+    if (!rotate)
+    {
+        x = 1; y = 0;
+    }
+
+    char[,] temp = new char[form.GetLength(y), form.GetLength(x)];
+    for (int i = 0; i < temp.GetLength(0); i++)
+    {
+        for (int j = 0; j < temp.GetLength(1); j++)
+        {
+            if(rotate)temp[i, j] = form[form.GetLength(0)-1-j, i];
+            else temp[i, j] = form[i, j];
+        }
+    }
+
+    return temp;
+}
+
 void Print(char[,] field)
 {
     Console.Clear();
@@ -55,9 +77,15 @@ void Print(char[,] field)
         Console.WriteLine();
     }
 }
-
-char[,] Field(in char[,] fd, char[,] form)
+//////////////////////////////////////////////////////////////////////////////////////
+char[,] Field(in char[,] fd, in char[,] formDef)
 {
+    char[,] form = new char[formDef.GetLength(0), formDef.GetLength(1)],
+            temp = new char[formDef.GetLength(0), formDef.GetLength(1)];
+    for (int i = new Random().Next(1, 4); i > 0; i--)
+    {
+        form = Rotation(formDef);
+    }
     char[,] field = new char[fd.GetLength(0), fd.GetLength(1)];
     Rewrite(ref field, fd);
     bool check = true;
@@ -102,6 +130,14 @@ char[,] Field(in char[,] fd, char[,] form)
                     speed = speed / 30;
                 }
                 break;
+            case ConsoleKey.W:
+                temp = Rotation(form);
+                if (YouCanMove(field, temp, y, x))
+                {
+                    form = Rotation(temp, false);
+                    speed = speed / 30;
+                }
+                break;
             default:
                 check = YouCanMove(field, form, y + 1, x);
                 if (check)
@@ -123,6 +159,10 @@ char[,] Field(in char[,] fd, char[,] form)
     return field;
 
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////
+
 int width = 18,
         height = 27;
 
@@ -130,26 +170,26 @@ char[,] field = new char[height, width],
 
 form1 =
 {
-                {'0'/*,"0","0","0"*/}
-            },
+    {'0','0','0','0'}
+},
 
 form2 =
 {
-                {'0','0'},
-                {'0','0'}
-            },
+    {'0','0'},
+    {'0','0'}
+},
 
 form3 =
 {
-                {'0','0',' '},
-                {' ','0','0'}
-            },
+    {'0','0',' '},
+    {' ','0','0'}
+},
 
 form4 =
 {
-                {' ','0','0'},
-                {'0','0',' '}
-            },
+    {' ','0','0'},
+    {'0','0',' '}
+},
 
 form5 =
 {
