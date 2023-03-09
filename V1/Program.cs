@@ -78,10 +78,10 @@ void Print(char[,] field)
     }
 }
 //////////////////////////////////////////////////////////////////////////////////////
-char[,] Field(in char[,] fd, in char[,] formDef)
+char[,] Game(in char[,] fd, in char[,] formDef)
 {
-    char[,] form = new char[formDef.GetLength(0), formDef.GetLength(1)],
-            temp = new char[formDef.GetLength(0), formDef.GetLength(1)];
+    char[,] form = new char[0, 0],
+            temp = new char[0, 0];
     for (int i = new Random().Next(1, 4); i > 0; i--)
     {
         form = Rotation(formDef);
@@ -213,10 +213,10 @@ for (int i = 0; i < field.GetLength(0); i++)
 }
 
 //field = Field(field, form1);
-field = Field(field, form2);
-field = Field(field, form3);
-field = Field(field, form4);
-field = Field(field, form5);
-field = Field(field, form6);
+field = Game(field, form2);
+field = Game(field, form3);
+field = Game(field, form4);
+field = Game(field, form5);
+field = Game(field, form6);
 
 
