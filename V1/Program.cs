@@ -1,136 +1,157 @@
-﻿void Field(ref string[,] field, string[,] form)
+﻿
+bool YouCanMove(in char[,] field, in char[,] form, int yOs, int xOs)
 {
-    string[,] fd = new string[field.GetLength(0), field.GetLength(1)];
-    bool check = true;
-    int val = 0;
-    for (int i = 1; val == 0 && i < field.GetLength(0) - 1; i++)
+    for (int i = form.GetLength(0) - 1; i >= 0 && yOs > 0; i--, yOs--)
     {
-        for (int j = 0; j < fd.GetLength(0); j++)
+        for (int j = 0; j < form.GetLength(1); j++)
         {
-            for (int k = 0; k < fd.GetLength(1); k++)
+            if (form[i, j] != ' ')
             {
-                fd[j, k] = field[j, k];
-            }
-        }
-
-        for (int j = 0; check && val == 0 && j < form.GetLength(0); j++)
-        {
-            for (int k = 0; check && k < form.GetLength(1); k++)
-            {
-                if (fd[j + i + 1, k + fd.GetLength(1) / 2 - 1] == " ")
+                if (field[yOs, xOs + j] != ' ')
                 {
-                    check = true;
-                }
-                else
-                {
-                    check = false;
-                    val = 1;
+                    return false;
                 }
             }
-            if (check)
-            {
-                for (int k = 0; k < form.GetLength(0); k++)
-                {
-                    for (int l = 0; l < form.GetLength(1); l++)
-                    {
-                        fd[i + k, l + fd.GetLength(1) / 2 - 1] = form[k, l];
-                    }
-
-                }
-            }
-
-        }
-        Console.Clear();
-        for (int j = 0; j < fd.GetLength(0); j++)
-        {
-            for (int k = 0; k < fd.GetLength(1); k++)
-            {
-                Console.Write(fd[j, k]);
-            }
-            Console.WriteLine();
-        }
-        Thread.Sleep(100);
-    }
-
-    for (int i = 0; i < fd.GetLength(0); i++)
-    {
-        for (int j = 0; j < fd.GetLength(1); j++)
-        {
-            field[i, j] = fd[i, j];
         }
     }
-
+    return true;
 }
 
-string[,] field =
+void Rewrite(ref char[,] rewritableArray, in char[,] copiedArray)
 {
-    {"#","#","#","#","#","#","#","#","#","#","#","#","#","#","#","#","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#"," "," "," "," "," "," "," "," "," "," "," "," "," "," "," ","#"},
-    {"#","#","#","#","#","#","#","#","#","#","#","#","#","#","#","#","#"}
-},
+    for (int i = 0; i < rewritableArray.GetLength(0); i++)
+    {
+        for (int j = 0; j < copiedArray.GetLength(1); j++)
+        {
+            rewritableArray[i, j] = copiedArray[i, j];
+        }
+    }
+}
+
+void Move(ref char[,] field, in char[,] form, int yOs, int xOs, bool clear = false)
+{
+    for (int i = form.GetLength(0) - 1; i >= 0 && yOs > 0; i--, yOs--)
+    {
+        for (int j = 0; j < form.GetLength(1); j++)
+        {
+            if (form[i, j] != ' ')
+            {
+                if (clear) field[yOs, xOs + j] = ' ';
+                else field[yOs, xOs + j] = form[i, j];
+            }
+        }
+    }
+}
+
+void Print(char[,] field)
+{
+    Console.Clear();
+    for (int i = 0; i < field.GetLength(0); i++)
+    {
+        for (int j = 0; j < field.GetLength(1); j++)
+        {
+            Console.Write(field[i, j]);
+        }
+        Console.WriteLine();
+    }
+}
+
+char[,] Field(in char[,] fd, char[,] form)
+{
+    char[,] field = new char[fd.GetLength(0), fd.GetLength(1)];
+    Rewrite(ref field, fd);
+    bool check = true;
+    int x = (byte)(field.GetLength(1) / 2 - form.GetLength(1) / 2),
+        y = default,
+        currX,
+        curry;
+    ConsoleKeyInfo key = new ConsoleKeyInfo();
+    while (check)
+    {
+        while (Console.KeyAvailable)
+            key = Console.ReadKey(true);
+
+        currX = x;
+        curry = y;
+
+        switch (key.Key)
+        {
+            case ConsoleKey.A:
+                x--;
+                break;
+
+            case ConsoleKey.D:
+                x++;
+                break;
+        }
+        key = default;
+        //y++;
+        check = YouCanMove(field, form, y + 1, x);
+        if (check) y++;
+        Move(ref field, form, y, x);
+        Print(field);
+
+        if (check) Move(ref field, form, y, x, check);
+
+        Thread.Sleep(500);
+    }
+    return field;
+
+}
+int width = 18,
+        height = 27;
+
+char[,] field = new char[height, width],
 
 form1 =
 {
-    {"0","0","0","0"}
-},
+                {'0'/*,"0","0","0"*/}
+            },
 
 form2 =
 {
-    {"0","0"},
-    {"0","0"}
-},
+                {'0','0'},
+                {'0','0'}
+            },
 
 form3 =
 {
-    {"0","0"," "},
-    {" ","0","0"}
-},
+                {'0','0',' '},
+                {' ','0','0'}
+            },
 
 form4 =
 {
-    {" ","0","0"},
-    {"0","0"," "}
-},
+                {' ','0','0'},
+                {'0','0',' '}
+            },
 
 form5 =
 {
-    {"0"," "," "},
-    {"0","0","0"}
-},
+                {'0',' ',' '},
+                {'0','0','0'}
+            },
 
 form6 =
 {
-    {" "," ","0"},
-    {"0","0","0"}
-};
+                {' ',' ','0'},
+                {'0','0','0'}
+            };
 
-//Field(ref field, form1);
-Field(ref field, form2);
-//Field(ref field, form3);
-Field(ref field, form4);
-Field(ref field, form5);
-Field(ref field, form6);
+for (int i = 0; i < field.GetLength(0); i++)
+{
+    for (int j = 0; j < field.GetLength(1); j++)
+    {
+        if (i == 0 || i == field.GetLength(0) - 1 || j == 0 || j == field.GetLength(1) - 1) field[i, j] = '#';
+        else field[i, j] = ' ';
+    }
+}
+
+//field = Field(field, form1);
+field = Field(field, form2);
+field = Field(field, form3);
+field = Field(field, form4);
+field = Field(field, form5);
+field = Field(field, form6);
+
+
