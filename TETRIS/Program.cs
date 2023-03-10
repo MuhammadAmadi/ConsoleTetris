@@ -57,7 +57,7 @@ char[,] Rotation(in char[,] form, bool rotate = true)
     {
         for (int j = 0; j < temp.GetLength(1); j++)
         {
-            if(rotate)temp[i, j] = form[form.GetLength(0)-1-j, i];
+            if (rotate) temp[i, j] = form[form.GetLength(0) - 1 - j, i];
             else temp[i, j] = form[i, j];
         }
     }
@@ -77,12 +77,14 @@ void Print(char[,] field)
         Console.WriteLine();
     }
 }
+
 //////////////////////////////////////////////////////////////////////////////////////
+
 char[,] Game(in char[,] fd, in char[,] formDef)
 {
     char[,] form = new char[0, 0],
             temp = new char[0, 0];
-    for (int i = new Random().Next(1, 4); i > 0; i--)
+    for (int i = new Random().Next(1, 5); i > 0; i--)
     {
         form = Rotation(formDef);
     }
@@ -164,7 +166,8 @@ char[,] Game(in char[,] fd, in char[,] formDef)
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 int width = 18,
-        height = 27;
+    height = 27,
+    selectForm = default;
 
 char[,] field = new char[height, width],
 
@@ -207,17 +210,33 @@ for (int i = 0; i < field.GetLength(0); i++)
 {
     for (int j = 0; j < field.GetLength(1); j++)
     {
-        if (i == 0 || i == field.GetLength(0) - 1 || j == 0 || j == field.GetLength(1) - 1) field[i, j] = '#';
+        if (i == 0 || j == 0 || i == field.GetLength(0) - 1 || j == field.GetLength(1) - 1) field[i, j] = '#';
         else field[i, j] = ' ';
     }
 }
 
-//field = Field(field, form1);
-field = Game(field, form2);
-field = Game(field, form3);
-field = Game(field, form4);
-field = Game(field, form5);
-field = Game(field, form6);
-
-
-
+while (true)
+{
+    selectForm = new Random().Next(0, 6);
+    switch (selectForm)
+    {
+        case 0:
+            field = Game(field, form1);
+            break;
+        case 1:
+            field = Game(field, form2);
+            break;
+        case 2:
+            field = Game(field, form3);
+            break;
+        case 3:
+            field = Game(field, form4);
+            break;
+        case 4:
+            field = Game(field, form5);
+            break;
+        case 5:
+            field = Game(field, form6);
+            break;
+    }
+}
