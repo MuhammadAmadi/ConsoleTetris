@@ -65,9 +65,9 @@ char[,] Rotation(in char[,] form, bool rotate = true)
     return temp;
 }
 
-void Print(char[,] field)
+void Print(in char[,] field)
 {
-    Console.Clear();
+    Console.SetCursorPosition(0,0);
     for (int i = 0; i < field.GetLength(0); i++)
     {
         for (int j = 0; j < field.GetLength(1); j++)
@@ -89,7 +89,8 @@ char[,] Game(in char[,] fieldDef, in char[,] formDef)
     int x = field.GetLength(1) / 2 - form.GetLength(1) / 2,
         y = default,
         speedDef = 500,
-        speed = speedDef;
+        speed = speedDef,
+        boost = 30;
     ConsoleKeyInfo key = new ConsoleKeyInfo();
     //////////////////////////////////////////////
     Rewrite(ref field, fieldDef);
@@ -110,7 +111,7 @@ char[,] Game(in char[,] fieldDef, in char[,] formDef)
                 if (YouCanMove(field, form, y, x - 1))
                 {
                     x--;
-                    speed = speed / 30;
+                    speed /= boost;
                 }
                 else
                     goto default;
@@ -119,25 +120,17 @@ char[,] Game(in char[,] fieldDef, in char[,] formDef)
                 if (YouCanMove(field, form, y, x + 1))
                 {
                     x++;
-                    speed = speed / 30;
+                    speed /= boost;
                 }
                 else
                     goto default;
-                break;
-            case ConsoleKey.S:
-                check = YouCanMove(field, form, y + 1, x);
-                if (check)
-                {
-                    y++;
-                    speed = speed / 30;
-                }
                 break;
             case ConsoleKey.W:
                 temp = Rotation(form);
                 if (YouCanMove(field, temp, y, x))
                 {
                     form = Rotation(temp, false);
-                    speed = speed / 30;
+                    speed /= boost;
                 }
                 break;
             default:
@@ -147,6 +140,7 @@ char[,] Game(in char[,] fieldDef, in char[,] formDef)
                     y++;
                     speed = speedDef;
                 }
+                if (key.Key == ConsoleKey.S) speed = speed / boost;
                 break;
 
         }
@@ -166,7 +160,8 @@ char[,] Game(in char[,] fieldDef, in char[,] formDef)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
+Console.CursorVisible = false;
+Console.Clear();
 int width = 18,
     height = 27,
     selectForm = default;
