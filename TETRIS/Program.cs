@@ -17,15 +17,107 @@ bool YouCanMove(in char[,] field, in char[,] form, int yOs, int xOs)
     return true;
 }
 
-void Rewrite(ref char[,] rewritableArray, in char[,] copiedArray)
+char[,] Rewrite(in char[,] copiedArray)
 {
-
+    char[,] rewritableArray = new char[copiedArray.GetLength(0), copiedArray.GetLength(1)];
     for (int i = 0; i < copiedArray.GetLength(0); i++)
     {
         for (int j = 0; j < copiedArray.GetLength(1); j++)
         {
             rewritableArray[i, j] = copiedArray[i, j];
         }
+    }
+    return rewritableArray;
+}
+
+char[,] Rotation(in char[,] form)
+{
+    char[,] temp = new char[form.GetLength(1), form.GetLength(0)];
+
+    for (int i = 0; i < temp.GetLength(0); i++)
+    {
+        for (int j = 0; j < temp.GetLength(1); j++)
+        {
+            temp[i, j] = form[form.GetLength(0) - 1 - j, i];
+        }
+    }
+
+    return temp;
+}
+
+char[,] Forms()
+{
+    Random rnd = new Random();
+    char[,] form1 =
+            {
+                { '0','0','0','0'}
+            },
+
+            form2 =
+            {
+                { '0','0'},
+                { '0','0'}
+            },
+
+            form3 =
+            {
+                { '0','0',' '},
+                { ' ','0','0'}
+            },
+
+            form4 =
+            {
+                { ' ','0','0'},
+                { '0','0',' '}
+            },
+
+            form5 =
+            {
+                { '0',' ',' '},
+                { '0','0','0'}
+            },
+
+            form6 =
+            {
+                { ' ',' ','0'},
+                { '0','0','0'}
+            },
+
+            form = new char[0, 0];
+    switch (rnd.Next(0, 6))
+    {
+        case 0:
+            for (int i = rnd.Next(2); i >= 0; i--) form = Rotation(form1);
+            return form;
+        case 1:
+            return form2;
+        case 2:
+            for (int i = rnd.Next(2); i >= 0; i--) form = Rotation(form3);
+            return form;
+        case 3:
+            for (int i = rnd.Next(2); i >= 0; i--) form = Rotation(form4);
+            return form;
+        case 4:
+            for (int i = rnd.Next(4); i >= 0; i--) form = Rotation(form5);
+            return form;
+        case 5:
+            for (int i = rnd.Next(4); i >= 0; i--) form = Rotation(form6);
+            return form;
+        default:
+            return form1;
+    }
+}
+
+void Print(in char[,] field)
+{
+    Console.SetCursorPosition(0, 0);
+    for (int i = 0; i < field.GetLength(0); i++)
+    {
+        for (int j = 0; j < field.GetLength(1); j++)
+        {
+            Console.Write(field[i, j]);
+        }
+        Console.WriteLine();
     }
 }
 
@@ -44,118 +136,97 @@ void Move(ref char[,] field, in char[,] form, int yOs, int xOs, bool clear = fal
     }
 }
 
-char[,] Rotation(in char[,] form, bool rotate = true)
-{
-    int x = 0, y = 1;
-    if (!rotate)
-    {
-        x = 1; y = 0;
-    }
-    char[,] temp = new char[form.GetLength(y), form.GetLength(x)];
-    /////////////////////////////////////////////////////////////
-    for (int i = 0; i < temp.GetLength(0); i++)
-    {
-        for (int j = 0; j < temp.GetLength(1); j++)
-        {
-            if (rotate) temp[i, j] = form[form.GetLength(0) - 1 - j, i];
-            else temp[i, j] = form[i, j];
-        }
-    }
-
-    return temp;
-}
-
-void Print(in char[,] field)
-{
-    Console.SetCursorPosition(0,0);
-    for (int i = 0; i < field.GetLength(0); i++)
-    {
-        for (int j = 0; j < field.GetLength(1); j++)
-        {
-            Console.Write(field[i, j]);
-        }
-        Console.WriteLine();
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////////////////
 
-char[,] Game(in char[,] fieldDef, in char[,] formDef)
+void Game(char[,] fieldDef)
 {
+
     char[,] form = new char[0, 0],
             temp = new char[0, 0],
-            field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)]; ;
-    bool check = true;
-    int x = field.GetLength(1) / 2 - form.GetLength(1) / 2,
+            field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)];
+
+    bool check;
+    int x = default,
         y = default,
         speedDef = 500,
         speed = speedDef,
         boost = 30;
     ConsoleKeyInfo key = new ConsoleKeyInfo();
+    /////////////////////////////////////////////
+
+
+
     //////////////////////////////////////////////
-    Rewrite(ref field, fieldDef);
-    for (int i = new Random().Next(1, 5); i > 0; i--)
-    {
-        form = Rotation(formDef);
-    }
+    field = Rewrite(fieldDef);
+    form = Forms();
     //////////////////////////////////////////////
-    while (check)
+    while (key.Key != ConsoleKey.Escape)
     {
-        Thread.Sleep(speed);
-        while (Console.KeyAvailable)
-            key = Console.ReadKey(true);
-        ////////////////////////////////
-        switch (key.Key)
+        form = Forms();
+        x = field.GetLength(1) / 2 - form.GetLength(1) / 2;
+        y = default;
+        check = true;
+        while (check)
         {
-            case ConsoleKey.A:
-                if (YouCanMove(field, form, y, x - 1))
-                {
-                    x--;
-                    speed /= boost;
-                }
-                else
-                    goto default;
-                break;
-            case ConsoleKey.D:
-                if (YouCanMove(field, form, y, x + 1))
-                {
-                    x++;
-                    speed /= boost;
-                }
-                else
-                    goto default;
-                break;
-            case ConsoleKey.W:
-                temp = Rotation(form);
-                if (YouCanMove(field, temp, y, x))
-                {
-                    form = Rotation(temp, false);
-                    speed /= boost;
-                }
-                break;
-            default:
-                check = YouCanMove(field, form, y + 1, x);
-                if (check)
-                {
-                    y++;
-                    speed = speedDef;
-                }
-                if (key.Key == ConsoleKey.S) speed = speed / boost;
-                break;
+            Thread.Sleep(speed);
+            while (Console.KeyAvailable)
+                key = Console.ReadKey(true);
+            ////////////////////////////////
+            switch (key.Key)
+            {
+                case ConsoleKey.A:
+                    key = default;
+                    if (YouCanMove(field, form, y, x - 1))
+                    {
+                        x--;
+                        speed /= boost;
+                    }
+                    else
+                        goto default;
+                    break;
+                case ConsoleKey.D:
+                    key = default;
+                    if (YouCanMove(field, form, y, x + 1))
+                    {
+                        x++;
+                        speed /= boost;
+                    }
+                    else
+                        goto default;
+                    break;
+                case ConsoleKey.W:
+                    key = default;
+                    temp = Rotation(form);
+                    if (YouCanMove(field, temp, y, x))
+                    {
+                        form = Rewrite(temp);
+                        speed /= boost;
+                    }
+                    break;
+                default:
+                    check = YouCanMove(field, form, y + 1, x);
+                    if (check)
+                    {
+                        y++;
+                        speed = speedDef;
+                    }
+                    if (key.Key == ConsoleKey.S)
+                    {
+                        speed = speed / boost;
+                        key = default;
+                    }
+                    break;
+
+            }
+
+            Move(ref field, form, y, x);
+            Print(field);
+
+            if (check) Move(ref field, form, y, x, check);
 
         }
-        ////////////////////////////////
-        key = default;
-
-        Move(ref field, form, y, x);
-        Print(field);
-
-        if (check) Move(ref field, form, y, x, check);
-
     }
     //////////////////////////////////////////////
-    return field;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -163,46 +234,9 @@ char[,] Game(in char[,] fieldDef, in char[,] formDef)
 Console.CursorVisible = false;
 Console.Clear();
 int width = 18,
-    height = 27,
-    selectForm = default;
+    height = 27;
 /////////////////////////////////////////////
-char[,] field = new char[height, width],
-
-form1 =
-{
-    {'0','0','0','0'}
-},
-
-form2 =
-{
-    {'0','0'},
-    {'0','0'}
-},
-
-form3 =
-{
-    {'0','0',' '},
-    {' ','0','0'}
-},
-
-form4 =
-{
-    {' ','0','0'},
-    {'0','0',' '}
-},
-
-form5 =
-{
-    {'0',' ',' '},
-    {'0','0','0'}
-},
-
-form6 =
-{
-    {' ',' ','0'},
-    {'0','0','0'}
-};
-/////////////////////////////////////////////
+char[,] field = new char[height, width];
 for (int i = 0; i < field.GetLength(0); i++)
 {
     for (int j = 0; j < field.GetLength(1); j++)
@@ -211,30 +245,5 @@ for (int i = 0; i < field.GetLength(0); i++)
         else field[i, j] = ' ';
     }
 }
-/////////////////////////////////////////////
-while (true)
-{
-    selectForm = new Random().Next(0, 6);
-    switch (selectForm)
-    {
-        case 0:
-            field = Game(field, form1);
-            break;
-        case 1:
-            field = Game(field, form2);
-            break;
-        case 2:
-            field = Game(field, form3);
-            break;
-        case 3:
-            field = Game(field, form4);
-            break;
-        case 4:
-            field = Game(field, form5);
-            break;
-        case 5:
-            field = Game(field, form6);
-            break;
-    }
-}
+Game(field);
 /////////////////////////////////////////////
