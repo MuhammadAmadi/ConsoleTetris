@@ -1,5 +1,5 @@
 ﻿
-bool YouCanMove(in char[,] field, in char[,] form, int yOs, int xOs, bool rotate = false)
+bool CheckCanMove(in char[,] field, in char[,] form, int yOs, int xOs, bool rotate = false)
 {
     for (int i = form.GetLength(0) - 1; i >= 0 && yOs > 0; i--, yOs--)
     {
@@ -57,10 +57,7 @@ char[,] DellFullRows(in char[,] fieldDef, int[] fullRowsNumber)
         {
             if (i>=1) field[k, j] = fieldDef[i, j];
             else if (k > 0 && j > 0 && j < field.GetLength(1) - 1) field[k, j] = ' ';
-            else
-            {
-                 field[k, j] = fieldDef[0, j];
-            }
+            else field[k, j] = fieldDef[0, j];
         }
         k--;
     }
@@ -87,9 +84,7 @@ char[,] Rotation(in char[,] form)
     for (int i = 0; i < temp.GetLength(0); i++)
     {
         for (int j = 0; j < temp.GetLength(1); j++)
-        {
             temp[i, j] = form[form.GetLength(0) - 1 - j, i];
-        }
     }
 
     return temp;
@@ -185,9 +180,7 @@ void Print(in char[,] field, in char[,] nextForm, int score, int level)
     for (int i = 0; i < field.GetLength(0); i++)
     {
         for (int j = 0; j < field.GetLength(1); j++)
-        {
             Console.Write(field[i, j]);
-        }
 
         if (i < sidebar.Length)
         {
@@ -200,9 +193,7 @@ void Print(in char[,] field, in char[,] nextForm, int score, int level)
         {
             Console.SetCursorPosition(field.GetLength(1) + 1, i);
             for (int j = 0; j < nextForm.GetLength(1); j++)
-            {
                 Console.Write(nextForm[i - sidebar.Length, j]);
-            }
         }
         Console.WriteLine();
     }
@@ -216,7 +207,7 @@ void Game(char[,] fieldDef)
             nextForm = new char[0, 0],
             temp = new char[0, 0],
             field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)];
-    bool check;
+    bool canMove;
     int x = default,
         y = default,
         level = default,
@@ -235,9 +226,9 @@ void Game(char[,] fieldDef)
         nextForm = Forms();
         x = field.GetLength(1) / 2 - form.GetLength(1) / 2;
         y = default;
-        check = true;
+        canMove = true;
         //////////////////////////////////////////////////
-        while (check)
+        while (canMove)
         {
             Thread.Sleep(speed);
             while (Console.KeyAvailable)
@@ -246,7 +237,7 @@ void Game(char[,] fieldDef)
             switch (key.Key)
             {
                 case ConsoleKey.P:
-                    key = Console.ReadKey(true);
+                    Console.ReadKey(true);
                     key = default;
                     break;
                 case ConsoleKey.Escape:
@@ -259,7 +250,7 @@ void Game(char[,] fieldDef)
                         x = 1;
                         goto default;
                     }
-                    if (YouCanMove(field, form, y, x - 1))
+                    if (CheckCanMove(field, form, y, x - 1))
                     {
                         x--;
                         speed = boost;
@@ -274,8 +265,7 @@ void Game(char[,] fieldDef)
                         x = field.GetLength(1) - 1 - form.GetLength(1);
                         goto default;
                     }
-
-                    if (YouCanMove(field, form, y, x + 1))
+                    if (CheckCanMove(field, form, y, x + 1))
                     {
                         x++;
                         speed = boost;
@@ -288,7 +278,7 @@ void Game(char[,] fieldDef)
                     temp = Rotation(form);
                     for (int i = 0; i < temp.GetLength(1); i++)
                     {
-                        if (y > 0 && YouCanMove(field, temp, y, x - i, true))
+                        if (y > 0 && CheckCanMove(field, temp, y, x - i, true))
                         {
                             form = Rewrite(temp);
                             speed = boost;
@@ -298,8 +288,8 @@ void Game(char[,] fieldDef)
                     }
                     break;
                 default:
-                    check = YouCanMove(field, form, y + 1, x);
-                    if (check)
+                    canMove = CheckCanMove(field, form, y + 1, x);
+                    if (canMove)
                     {
                         y++;
                         speed = speedDef;
@@ -315,7 +305,7 @@ void Game(char[,] fieldDef)
             field = Move(field, form, y, x);
             Print(field, nextForm, score, level);
 
-            if (check) field = Move(field, form, y, x, check);
+            if (canMove) field = Move(field, form, y, x, canMove);
             else
             {
                 if (y < form.GetLength(0))
