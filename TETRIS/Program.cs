@@ -68,19 +68,6 @@ char[,] Rewrite(in char[,] fieldDef, in int[] fullRowsNumber = null, bool dellFu
     return field;
 }
 
-// char[,] Rewrite(in char[,] copiedArray)
-// {
-//     char[,] rewritableArray = new char[copiedArray.GetLength(0), copiedArray.GetLength(1)];
-//     for (int i = 0; i < copiedArray.GetLength(0); i++)
-//     {
-//         for (int j = 0; j < copiedArray.GetLength(1); j++)
-//         {
-//             rewritableArray[i, j] = copiedArray[i, j];
-//         }
-//     }
-//     return rewritableArray;
-// }
-
 char[,] Rotation(in char[,] form)
 {
     char[,] temp = new char[form.GetLength(1), form.GetLength(0)];
