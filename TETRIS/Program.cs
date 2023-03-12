@@ -1,11 +1,11 @@
 ﻿
-bool YouCanMove(in char[,] field, in char[,] form, int yOs, int xOs)
+bool YouCanMove(in char[,] field, in char[,] form, int yOs, int xOs, bool rotate = false)
 {
     for (int i = form.GetLength(0) - 1; i >= 0 && yOs > 0; i--, yOs--)
     {
         for (int j = 0; j < form.GetLength(1); j++)
         {
-            if (form[i, j] != ' ')
+            if (rotate || form[i, j] != ' ')
             {
                 if (field[yOs, xOs + j] != ' ')
                 {
@@ -21,12 +21,11 @@ int[] FullRowsNumber(in char[,] field, int yOs, int heightForm)
 {
     bool full = false;
     string fullRowsNumber = string.Empty;
-    for (; heightForm > 0; yOs--, heightForm--)
+    for (; heightForm > 0 && yOs >= 0; yOs--, heightForm--)
     {
-        full = true;
-
         for (int j = 1; j < field.GetLength(1) - 1; j++)
         {
+            full = true;
             if (field[yOs, j] == ' ')
             {
                 full = false;
@@ -35,34 +34,32 @@ int[] FullRowsNumber(in char[,] field, int yOs, int heightForm)
 
         }
         if (fullRowsNumber != string.Empty && full) fullRowsNumber += $" {yOs}";
-        else fullRowsNumber += $"{yOs}";
+        else if (full) fullRowsNumber += $"{yOs}";
     }
-    if (fullRowsNumber == string.Empty) fullRowsNumber = "0 0";
+    if (fullRowsNumber == string.Empty) fullRowsNumber = "0";
 
     return fullRowsNumber.Split(' ').Select(s => Int32.Parse(s)).ToArray();
 }
 
-char[,] DellFullRows(in char[,] fieldDef, int[] fullRowsNumber, int timer = 10)
+char[,] DellFullRows(char[,] field, int[] fullRowsNumber)
 {
-    int count = fullRowsNumber.Length - 1;
-    char[,] field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)];
-    for (int i = 0; i < fieldDef.GetLength(0); i++)
-    {
-        for (int j = 0; j < fieldDef.GetLength(1); j++)
-        {
-            if (i > 0 && j > 0 && i == fullRowsNumber[count]
-                && j < fieldDef.GetLength(1) - 1 && i < fieldDef.GetLength(0) - 1)
-            {
-                field[i, j] = ' ';
+    int count = 0;
 
-            }
-            else
-            {
-                field[i, j] = fieldDef[i, j];
-            }
+    for (int i = field.GetLength(0) - 2, k = i; k >= 1; i--)
+    {
+        if (i == fullRowsNumber[count])
+        {
+            if (count < fullRowsNumber.Length - 1) count++;
+            continue;
         }
 
-        if (i == fullRowsNumber[count] && count > 0) count--;
+        for (int j = 1; j < field.GetLength(1) - 1; j++)
+        {
+            if (i < 1) field[k, j] = ' ';
+            else field[k, j] = field[i, j];
+
+        }
+        k--;
     }
     return field;
 }
@@ -98,7 +95,9 @@ char[,] Rotation(in char[,] form)
 char[,] Forms()
 {
     Random rnd = new Random();
-    char[,] form1 =
+    char[,] form = new char[0, 0],
+
+            form1 =
             {
                 { '0','0','0','0'}
             },
@@ -131,10 +130,9 @@ char[,] Forms()
             {
                 { ' ',' ','0'},
                 { '0','0','0'}
-            },
+            };
 
-            form = new char[0, 0];
-    switch (rnd.Next(1, 2))
+    switch (rnd.Next(0, 6))
     {
         case 0:
             for (int i = rnd.Next(2); i >= 0; i--) form = Rotation(form1);
@@ -222,20 +220,31 @@ void Game(char[,] fieldDef)
             {
                 case ConsoleKey.A:
                     key = default;
+                    if (x < 1)
+                    {
+                        x = 1;
+                        goto default;
+                    }
                     if (YouCanMove(field, form, y, x - 1))
                     {
                         x--;
-                        speed /= boost;
+                        speed = boost;
                     }
                     else
                         goto default;
                     break;
                 case ConsoleKey.D:
                     key = default;
+                    if (x > field.GetLength(1) - 2 - form.GetLength(1))
+                    {
+                        x = field.GetLength(1) - 1 - form.GetLength(1);
+                        goto default;
+                    }
+
                     if (YouCanMove(field, form, y, x + 1))
                     {
                         x++;
-                        speed /= boost;
+                        speed = boost;
                     }
                     else
                         goto default;
@@ -243,10 +252,15 @@ void Game(char[,] fieldDef)
                 case ConsoleKey.W:
                     key = default;
                     temp = Rotation(form);
-                    if (YouCanMove(field, temp, y, x))
+                    for (int i = 0; i < temp.GetLength(1); i++)
                     {
-                        form = Rewrite(temp);
-                        speed /= boost;
+                        if (y > 0 && YouCanMove(field, temp, y, x - i, true))
+                        {
+                            form = Rewrite(temp);
+                            speed = boost;
+                            x = x - i;
+                            break;
+                        }
                     }
                     break;
                 default:
@@ -270,8 +284,16 @@ void Game(char[,] fieldDef)
             if (check) field = Move(field, form, y, x, check);
             else
             {
-                field = DellFullRows(field, FullRowsNumber(field, y, form.GetLength(0)));
-                Print(field);
+                int[] fullRowNum = FullRowsNumber(field, y, form.GetLength(0));
+                if (fullRowNum[0] != 0)
+                {
+                    char[,] clear = new char[fullRowNum.Length, field.GetLength(1) - 2];
+                    field = Move(field, clear, fullRowNum[0], 1, true);
+                    Print(field);
+                    field = DellFullRows(field, fullRowNum);
+                    Thread.Sleep(50);
+                    Print(field);
+                }
             }
 
         }
