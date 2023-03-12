@@ -134,10 +134,10 @@ char[,] Forms()
                 { '0','0','0'}
             };
 
-    switch (rnd.Next(2))
+    switch (rnd.Next(6))
     {
         case 0:
-            for (int i = 1; i >= 0; i--) form1 = Rotation(form1);
+            for (int i = rnd.Next(3); i >= 0; i--) form1 = Rotation(form1);
             return form1;
         case 1:
             return form2;
@@ -335,7 +335,6 @@ void Game(char[,] fieldDef)
                 }
                 score++;
                 int[] fullRowNum = FullRowsNumber(field, y, form.GetLength(0));
-                Console.WriteLine(string.Join(" ", fullRowNum));
                 if (fullRowNum[0] != 0)
                 {
                     char[,] clear = new char[1,field.GetLength(1) - 2];
