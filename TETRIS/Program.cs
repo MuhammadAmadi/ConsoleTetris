@@ -342,7 +342,7 @@ void Game(char[,] fieldDef)
                         field = Move(field, clear, fullRowNum[i], 1, true);
                     Print(field, nextForm, score, level);
                     field = DellFullRows(field, fullRowNum);
-                    Thread.Sleep(1000);
+                    Thread.Sleep(speed);
                     Print(field, nextForm, score, level);
                     level+=fullRowNum.Length;
                 }
