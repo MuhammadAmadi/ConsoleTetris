@@ -41,23 +41,26 @@ int[] FullRowsNumber(in char[,] field, int yOs, int heightForm)
     return fullRowsNumber.Split(' ').Select(s => Int32.Parse(s)).ToArray();
 }
 
-char[,] DellFullRows(char[,] field, int[] fullRowsNumber)
+char[,] DellFullRows(in char[,] fieldDef, int[] fullRowsNumber)
 {
+    char[,] field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)];
     int count = 0;
-
-    for (int i = field.GetLength(0) - 2, k = i; k >= 1; i--)
+    for (int i = field.GetLength(0) - 1, k = i; k >= 0; i--)
     {
-        if (i == fullRowsNumber[count])
+        if (count < fullRowsNumber.Length && i == fullRowsNumber[count])
         {
-            if (count < fullRowsNumber.Length - 1) count++;
+            count++;
             continue;
         }
 
-        for (int j = 1; j < field.GetLength(1) - 1; j++)
+        for (int j = 0; j < field.GetLength(1); j++)
         {
-            if (i < 1) field[k, j] = ' ';
-            else field[k, j] = field[i, j];
-
+            if (i>=1) field[k, j] = fieldDef[i, j];
+            else if (k > 0 && j > 0 && j < field.GetLength(1) - 1) field[k, j] = ' ';
+            else
+            {
+                 field[k, j] = fieldDef[0, j];
+            }
         }
         k--;
     }
@@ -131,7 +134,7 @@ char[,] Forms()
                 { '0','0','0'}
             };
 
-    switch (rnd.Next(6))
+    switch (rnd.Next(2))
     {
         case 0:
             for (int i = 1; i >= 0; i--) form1 = Rotation(form1);
@@ -198,7 +201,7 @@ void Print(in char[,] field, in char[,] nextForm, int score, int level)
             Console.SetCursorPosition(field.GetLength(1) + 1, i);
             for (int j = 0; j < nextForm.GetLength(1); j++)
             {
-                Console.Write(nextForm[i-sidebar.Length, j]);
+                Console.Write(nextForm[i - sidebar.Length, j]);
             }
         }
         Console.WriteLine();
@@ -310,7 +313,7 @@ void Game(char[,] fieldDef)
             }
             /////////////////////////////////////////////////
             field = Move(field, form, y, x);
-            Print(field,nextForm, score, level);
+            Print(field, nextForm, score, level);
 
             if (check) field = Move(field, form, y, x, check);
             else
@@ -327,29 +330,31 @@ void Game(char[,] fieldDef)
                     };
 
                     field = Move(field, gameOver, field.GetLength(0) / 2 + 2, field.GetLength(1) / 2 - 3);
-                    Print(field,nextForm, score, level);
+                    Print(field, nextForm, score, level);
                     return;
                 }
                 score++;
                 int[] fullRowNum = FullRowsNumber(field, y, form.GetLength(0));
+                Console.WriteLine(string.Join(" ", fullRowNum));
                 if (fullRowNum[0] != 0)
                 {
-                    char[,] clear = new char[fullRowNum.Length, field.GetLength(1) - 2];
-                    field = Move(field, clear, fullRowNum[0], 1, true);
-                    Print(field,nextForm, score, level);
+                    char[,] clear = new char[1,field.GetLength(1) - 2];
+                    for(int i = 0; i < fullRowNum.Length; i++)
+                        field = Move(field, clear, fullRowNum[i], 1, true);
+                    Print(field, nextForm, score, level);
                     field = DellFullRows(field, fullRowNum);
-                    Thread.Sleep(50);
-                    Print(field,nextForm, score, level);
-                    level++;
+                    Thread.Sleep(1000);
+                    Print(field, nextForm, score, level);
+                    level+=fullRowNum.Length;
                 }
-                char[,] delOldForm = 
+                char[,] delOldForm =
                 {
                     {' ',' ',' ',' '},
                     {' ',' ',' ',' '},
                     {' ',' ',' ',' '},
                     {' ',' ',' ',' '}
                 };
-                Print(field,delOldForm, score, level);
+                Print(field, delOldForm, score, level);
                 form = nextForm;
             }
         }
