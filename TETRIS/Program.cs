@@ -192,12 +192,11 @@ void Print(in char[,] field, in char[,] nextForm, in int score, in int level)
 
 //////////////////////////////////////////////////////////////////////////////////////
 
-void Game(char[,] fieldDef)
+void Game(char[,] field)
 {
-    char[,] form = new char[0, 0],
-            nextForm = new char[0, 0],
-            temp = new char[0, 0],
-            field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)];
+    char[,] form = new char[0, 0], // хранит игровую фигуру
+            nextForm = new char[0, 0], // хранит игровую фигуру
+            temp = new char[0, 0];
     bool canMove;
     int x = default,
         y = default,
@@ -206,26 +205,25 @@ void Game(char[,] fieldDef)
         speedDef = 500,
         speed = speedDef,
         boost = 30;
-    ConsoleKeyInfo key = new ConsoleKeyInfo();
+    ConsoleKeyInfo key = new ConsoleKeyInfo(); // переменная для хранения нажатой клавиши
     /////////////////////////////////////////////
-    field = Rewrite(fieldDef);
-    form = Forms();
+    form = Forms(); // вызываем метод для выбора игровой фигуры
     //////////////////////////////////////////////
     while (true)
     {
         //////////////////////////////////////////////////
-        nextForm = Forms();
-        x = field.GetLength(1) / 2 - form.GetLength(1) / 2;
+        nextForm = Forms(); //вызываем метод для выбора следующей игровой фигуры
+        x = field.GetLength(1) / 2 - form.GetLength(1) / 2; // определяем относительную середину
         y = default;
         canMove = true;
         //////////////////////////////////////////////////
         while (canMove)
         {
-            Thread.Sleep(speed);
-            while (Console.KeyAvailable)
-                key = Console.ReadKey(true);
+            Thread.Sleep(speed); // таймер задержки
+            while (Console.KeyAvailable) // проверяем была ли нажата клавиша
+                key = Console.ReadKey(true); // если была нажата присваеиваем переменной key значение нажатой клавиши
             /////////////////////////////////////////////////
-            switch (key.Key)
+            switch (key.Key) // выбираем действие соответсвующий нажатой клавиши
             {
                 case ConsoleKey.P:
                     Console.ReadKey(true);
@@ -235,30 +233,30 @@ void Game(char[,] fieldDef)
                     return;
                 /////////////////////////////////////////////    
                 case ConsoleKey.A:
-                    key = default;
-                    if (x < 1)
+                    key = default; // сбрасываем значение переменной после того как она отработала
+                    if (x < 1) // возврашаем значение x чтобы не вышло за поле
                     {
                         x = 1;
-                        goto default;
+                        goto default; // идем в кейс по умолчанию чтобы продолжать движение вниз
                     }
-                    if (CheckCanMove(field, form, y, x - 1))
+                    if (CheckCanMove(field, form, y, x - 1)) //проверяем можно ли двигатся в том направлении по которой хотим
                     {
-                        x--;
-                        speed = boost;
+                        x--; // если можно двигаться уменьшаем значение х
+                        speed = boost; // меняем время задержки таймера
                     }
                     else
                         goto default;
                     break;
                 case ConsoleKey.D:
                     key = default;
-                    if (x > field.GetLength(1) - 2 - form.GetLength(1))
+                    if (x > field.GetLength(1) - 2 - form.GetLength(1)) // возврашаем значение x чтобы не вышло за поле
                     {
                         x = field.GetLength(1) - 1 - form.GetLength(1);
                         goto default;
                     }
-                    if (CheckCanMove(field, form, y, x + 1))
+                    if (CheckCanMove(field, form, y, x + 1)) //проверяем можно ли двигатся в том направлении по которой хотим
                     {
-                        x++;
+                        x++; // если можно двигаться увеличиваем значение х
                         speed = boost;
                     }
                     else
@@ -266,8 +264,8 @@ void Game(char[,] fieldDef)
                     break;
                 case ConsoleKey.W:
                     key = default;
-                    temp = Rotation(form);
-                    for (int i = 0; i < temp.GetLength(1); i++)
+                    temp = Rotation(form); // вызываем метод врашения игровой фигуры
+                    for (int i = 0; i < temp.GetLength(1); i++) // это сделано чтобы фигура могла врашаться если прижата к правой стенке
                     {
                         if (y > 0 && CheckCanMove(field, temp, y, x - i, true))
                         {
@@ -279,13 +277,13 @@ void Game(char[,] fieldDef)
                     }
                     break;
                 default:
-                    canMove = CheckCanMove(field, form, y + 1, x);
+                    canMove = CheckCanMove(field, form, y + 1, x); // проверяет можно двигаться вниз, если нельзя canMove = false
                     if (canMove)
                     {
                         y++;
                         speed = speedDef;
                     }
-                    if (key.Key == ConsoleKey.S)
+                    if (key.Key == ConsoleKey.S) // ускорение вниз
                     {
                         speed = speed / boost;
                         key = default;
@@ -293,13 +291,13 @@ void Game(char[,] fieldDef)
                     break;
             }
             /////////////////////////////////////////////////
-            field = Move(field, form, y, x);
-            Print(field, nextForm, score, level);
+            field = Move(field, form, y, x); // записываем в поле фигуру
+            Print(field, nextForm, score, level); // печатаем поле
 
-            if (canMove) field = Move(field, form, y, x, canMove);
+            if (canMove) field = Move(field, form, y, x, canMove); // если canMove = true удаляем фигуру который нарисовали ранее
             else
             {
-                if (y < form.GetLength(0))
+                if (y < form.GetLength(0)) // если y < высоты фигуры GameOver
                 {
                     char[,] gameOver =
                     {
@@ -315,17 +313,17 @@ void Game(char[,] fieldDef)
                     return;
                 }
                 score++;
-                int[] fullRowNum = FullRowsNumber(field, y, form.GetLength(0));
-                if (fullRowNum[0] >= 0)
+                int[] fullRowNum = FullRowsNumber(field, y, form.GetLength(0)); // вызываем метод для проверки заполнен ли какая либо строка, по умолчанию возхврашает -1, если заполнено строка(и) возврашает индекс строк(и)
+                if (fullRowNum[0] >= 0) // если значение в первом элементо 0 или больше удаляем строки
                 {
-                    char[,] clear = new char[1, field.GetLength(1) - 2];
-                    for (int i = 0; i < fullRowNum.Length; i++)
-                        field = Move(field, clear, fullRowNum[i], 1, true);
-                    Print(field, nextForm, score, level);
-                    field = Rewrite(field, fullRowNum, true);
-                    Thread.Sleep(speed);
-                    Print(field, nextForm, score, level);
-                    level += fullRowNum.Length;
+                    char[,] clear = new char[1, field.GetLength(1) - 2]; // создаем пустую матрицу на одну строку 
+                    for (int i = 0; i < fullRowNum.Length; i++) // с помощю массива fullRowNum определяется сколько строк нужно удалить
+                        field = Move(field, clear, fullRowNum[i], 1, true); // записываем в поле пустую фигуру
+                    Print(field, nextForm, score, level); // печатаем
+                    field = Rewrite(field, fullRowNum, true); // теперь удаляем строки которые очистили ранее
+                    Thread.Sleep(speed); 
+                    Print(field, nextForm, score, level); // печатаем
+                    level += fullRowNum.Length; // увеличиваем уровень на количество удаленных строк
                 }
                 char[,] delOldForm =
                 {
@@ -334,8 +332,8 @@ void Game(char[,] fieldDef)
                     {' ',' ',' ',' '},
                     {' ',' ',' ',' '}
                 };
-                Print(field, delOldForm, score, level);
-                form = nextForm;
+                Print(field, delOldForm, score, level); // очишаем поле где показывала следующую фигуру
+                form = nextForm; // следующая фигура становится игровой
             }
         }
     }
@@ -344,12 +342,13 @@ void Game(char[,] fieldDef)
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //START
-Console.CursorVisible = false;
-Console.Clear();
-int width = 20,
-    height = 28;
-char[,] field = new char[height, width];
+Console.CursorVisible = false; // отключает курсор на консоли
+Console.Clear(); // очишает консоль
+int width = 20,     // ширина поля
+    height = 28;    // высота поля
+char[,] field = new char[height, width]; // массив поля
 /////////////////////////////////////////////
+/// задаем границы поля
 for (int i = 0; i < field.GetLength(0); i++)
 {
     for (int j = 0; j < field.GetLength(1); j++)
