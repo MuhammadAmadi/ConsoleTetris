@@ -36,18 +36,18 @@ int[] FullRowsNumber(in char[,] field, int yOs, int heightForm)
         if (fullRowsNumber != string.Empty && full) fullRowsNumber += $" {yOs}";
         else if (full) fullRowsNumber += $"{yOs}";
     }
-    if (fullRowsNumber == string.Empty) fullRowsNumber = "0";
+    if (fullRowsNumber == string.Empty) fullRowsNumber = "-1";
 
     return fullRowsNumber.Split(' ').Select(s => Int32.Parse(s)).ToArray();
 }
 
-char[,] DellFullRows(in char[,] fieldDef, int[] fullRowsNumber)
+char[,] Rewrite(in char[,] fieldDef, in int[] fullRowsNumber = null, bool dellFullRows = false)
 {
     char[,] field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)];
     int count = 0;
     for (int i = field.GetLength(0) - 1, k = i; k >= 0; i--)
     {
-        if (count < fullRowsNumber.Length && i == fullRowsNumber[count])
+        if (dellFullRows && count < fullRowsNumber.Length && i == fullRowsNumber[count])
         {
             count++;
             continue;
@@ -55,27 +55,31 @@ char[,] DellFullRows(in char[,] fieldDef, int[] fullRowsNumber)
 
         for (int j = 0; j < field.GetLength(1); j++)
         {
-            if (i>=1) field[k, j] = fieldDef[i, j];
-            else if (k > 0 && j > 0 && j < field.GetLength(1) - 1) field[k, j] = ' ';
-            else field[k, j] = fieldDef[0, j];
+            if (dellFullRows)
+            {
+                if (i >= 1) field[k, j] = fieldDef[i, j];
+                else if (k > 0 && j > 0 && j < field.GetLength(1) - 1) field[k, j] = ' ';
+                else field[k, j] = fieldDef[0, j];
+            }
+            else field[i, j] = fieldDef[i, j];
         }
         k--;
     }
     return field;
 }
 
-char[,] Rewrite(in char[,] copiedArray)
-{
-    char[,] rewritableArray = new char[copiedArray.GetLength(0), copiedArray.GetLength(1)];
-    for (int i = 0; i < copiedArray.GetLength(0); i++)
-    {
-        for (int j = 0; j < copiedArray.GetLength(1); j++)
-        {
-            rewritableArray[i, j] = copiedArray[i, j];
-        }
-    }
-    return rewritableArray;
-}
+// char[,] Rewrite(in char[,] copiedArray)
+// {
+//     char[,] rewritableArray = new char[copiedArray.GetLength(0), copiedArray.GetLength(1)];
+//     for (int i = 0; i < copiedArray.GetLength(0); i++)
+//     {
+//         for (int j = 0; j < copiedArray.GetLength(1); j++)
+//         {
+//             rewritableArray[i, j] = copiedArray[i, j];
+//         }
+//     }
+//     return rewritableArray;
+// }
 
 char[,] Rotation(in char[,] form)
 {
@@ -169,7 +173,7 @@ char[,] Move(char[,] field, in char[,] form, int yOs, int xOs, bool clear = fals
     return field;
 }
 
-void Print(in char[,] field, in char[,] nextForm, int score, int level)
+void Print(in char[,] field, in char[,] nextForm, in int score, in int level)
 {
     string[] sidebar =
     {
@@ -325,16 +329,16 @@ void Game(char[,] fieldDef)
                 }
                 score++;
                 int[] fullRowNum = FullRowsNumber(field, y, form.GetLength(0));
-                if (fullRowNum[0] != 0)
+                if (fullRowNum[0] >= 0)
                 {
-                    char[,] clear = new char[1,field.GetLength(1) - 2];
-                    for(int i = 0; i < fullRowNum.Length; i++)
+                    char[,] clear = new char[1, field.GetLength(1) - 2];
+                    for (int i = 0; i < fullRowNum.Length; i++)
                         field = Move(field, clear, fullRowNum[i], 1, true);
                     Print(field, nextForm, score, level);
-                    field = DellFullRows(field, fullRowNum);
+                    field = Rewrite(field, fullRowNum, true);
                     Thread.Sleep(speed);
                     Print(field, nextForm, score, level);
-                    level+=fullRowNum.Length;
+                    level += fullRowNum.Length;
                 }
                 char[,] delOldForm =
                 {
@@ -352,7 +356,7 @@ void Game(char[,] fieldDef)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////
-
+//START
 Console.CursorVisible = false;
 Console.Clear();
 int width = 20,
@@ -368,4 +372,4 @@ for (int i = 0; i < field.GetLength(0); i++)
     }
 }
 Game(field);
-/////////////////////////////////////////////
+//END
