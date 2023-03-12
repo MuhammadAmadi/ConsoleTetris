@@ -1,13 +1,14 @@
-﻿
+﻿// метод проверки можно ли двигаться или врашать фигуру принимает в аргументы игровое поле, фигуру,
+// координату Y, X и необязательная булевая переменная для корректного врашения 
 bool CheckCanMove(in char[,] field, in char[,] form, int yOs, int xOs, bool rotate = false)
 {
-    for (int i = form.GetLength(0) - 1; i >= 0 && yOs > 0; i--, yOs--)
+    for (int i = form.GetLength(0) - 1; i >= 0 && yOs > 0; i--, yOs--) //i = высота фигуры которую мы хотим записать пока координата y > 0 и пока i >= 0
     {
-        for (int j = 0; j < form.GetLength(1); j++)
+        for (int j = 0; j < form.GetLength(1); j++) // пока j меньше ширины фигуры которую хотим записать
         {
-            if (rotate || form[i, j] != ' ')
+            if (rotate || form[i, j] != ' ') // если мы не rotate true то не проверяем пустые элементы фигуры, если rotate false проверяем и если элемент не пустой идем дальше
             {
-                if (field[yOs, xOs + j] != ' ')
+                if (field[yOs, xOs + j] != ' ') // проверяем пуста ли нужная нам ячейка игрового поля, если хотя бы одна ячейка из нужной не пуста выходим из метода и возврашаем false иначе довершаем цикл и возврашаем true
                 {
                     return false;
                 }
@@ -17,30 +18,35 @@ bool CheckCanMove(in char[,] field, in char[,] form, int yOs, int xOs, bool rota
     return true;
 }
 
+// метод проверки какие строки заполнены принимает аргументы игровое поле, 
+// координату Y куда была записана последняя фигура и высота последней фигуры
 int[] FullRowsNumber(in char[,] field, int yOs, int heightForm)
 {
     bool full = false;
     string fullRowsNumber = string.Empty;
-    for (; heightForm > 0 && yOs >= 0; yOs--, heightForm--)
+    for (; heightForm > 0 && yOs >= 0; yOs--, heightForm--) // пока координата Y >= 0 и Высота фигуры >=0
     {
-        for (int j = 1; j < field.GetLength(1) - 1; j++)
+        for (int j = 1; j < field.GetLength(1) - 1; j++) 
         {
             full = true;
-            if (field[yOs, j] == ' ')
+            if (field[yOs, j] == ' ') //если в строке в строке встречается пустая ячейка тогда full = false и переходим к проверке следующей строки 
             {
                 full = false;
                 break;
             }
 
         }
-        if (fullRowsNumber != string.Empty && full) fullRowsNumber += $" {yOs}";
-        else if (full) fullRowsNumber += $"{yOs}";
+        if (fullRowsNumber != string.Empty && full) fullRowsNumber += $" {yOs}"; //если строка не пустая и full = true записываем пробел и индекс строки 
+        else if (full) fullRowsNumber += $"{yOs}"; //если full = true записываем индекс строки 
     }
-    if (fullRowsNumber == string.Empty) fullRowsNumber = "-1";
+    if (fullRowsNumber == string.Empty) fullRowsNumber = "-1"; // если ни одна строка не заполнена записываем -1
 
-    return fullRowsNumber.Split(' ').Select(s => Int32.Parse(s)).ToArray();
+    return fullRowsNumber.Split(' ').Select(s => Int32.Parse(s)).ToArray(); //полученные значения преврашаем в массив
 }
 
+// метод для перезаписи возврашает принимаемый аргумент,
+// или очишает строки которые переданны в массиве fullRowsNumber как заполненные,
+// чтобы удалить заполненные строки в аргумент dellFullRows нужно передать значение true
 char[,] Rewrite(in char[,] fieldDef, in int[]? fullRowsNumber = default, bool dellFullRows = false)
 {
     char[,] field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)];
@@ -68,6 +74,7 @@ char[,] Rewrite(in char[,] fieldDef, in int[]? fullRowsNumber = default, bool de
     return field;
 }
 
+// простой метод для врашения матрицы по часовой стрелке
 char[,] Rotation(in char[,] form)
 {
     char[,] temp = new char[form.GetLength(1), form.GetLength(0)];
@@ -81,6 +88,7 @@ char[,] Rotation(in char[,] form)
     return temp;
 }
 
+// метод рандомно выбиает и возврашает фигуры
 char[,] Forms()
 {
     Random rnd = new Random((int)DateTime.Now.Ticks);
@@ -144,13 +152,16 @@ char[,] Forms()
     }
 }
 
+// метод принимает в аргументы игровое поле, фигуру, координаты Y и X и необязательный аргумент clear 
+// метод записывает полученную фигуру в игровое поле по координатам Y и X
+// или удаляет область фигуры если предена в авргумент clear значение true
 char[,] Move(char[,] field, in char[,] form, int yOs, int xOs, bool clear = false)
 {
     for (int i = form.GetLength(0) - 1; i >= 0 && yOs > 0; i--, yOs--)
     {
         for (int j = 0; j < form.GetLength(1); j++)
         {
-            if (form[i, j] != ' ')
+            if (form[i, j] != ' ') // если элемент фигуры не пустой(пробел) записываем его или записываем или удаляем(записываем пробел) если clear = true
             {
                 if (clear) field[yOs, xOs + j] = ' ';
                 else field[yOs, xOs + j] = form[i, j];
@@ -160,6 +171,8 @@ char[,] Move(char[,] field, in char[,] form, int yOs, int xOs, bool clear = fals
     return field;
 }
 
+// выводим на экран иначе все бесполезно)))
+// перезаписывает поле не очишая терминал чтобы не моргал
 void Print(in char[,] field, in char[,] nextForm, in int score, in int level)
 {
     string[] sidebar =
@@ -167,7 +180,7 @@ void Print(in char[,] field, in char[,] nextForm, in int score, in int level)
         $"Score: {score}\t",$"Level: {level}"," ","Next:"
     };
 
-    Console.SetCursorPosition(0, 0);
+    Console.SetCursorPosition(0, 0); // переводим курсор левый верхний угол
     for (int i = 0; i < field.GetLength(0); i++)
     {
         for (int j = 0; j < field.GetLength(1); j++)
@@ -175,7 +188,7 @@ void Print(in char[,] field, in char[,] nextForm, in int score, in int level)
 
         if (i < sidebar.Length)
         {
-            Console.SetCursorPosition(field.GetLength(1) + 1, i);
+            Console.SetCursorPosition(field.GetLength(1) + 1, i); // переводим курсор от левого края в длину поля плюс одна единица, и на i-тую строку
             Console.Write(sidebar[i]);
             Console.WriteLine();
             continue;
