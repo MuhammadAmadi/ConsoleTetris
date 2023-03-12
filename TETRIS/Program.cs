@@ -248,6 +248,7 @@ void Game(char[,] fieldDef)
                     break;
                 case ConsoleKey.Escape:
                     return;
+                /////////////////////////////////////////////    
                 case ConsoleKey.A:
                     key = default;
                     if (x < 1)
