@@ -94,10 +94,9 @@ char[,] Rotation(in char[,] form)
 
 char[,] Forms()
 {
-    Random rnd = new Random();
-    char[,] form = new char[0, 0],
+    Random rnd = new Random((int)DateTime.Now.Ticks);
 
-            form1 =
+    char[,] form1 =
             {
                 { '0','0','0','0'}
             },
@@ -132,25 +131,25 @@ char[,] Forms()
                 { '0','0','0'}
             };
 
-    switch (rnd.Next(0, 6))
+    switch (rnd.Next(6))
     {
         case 0:
-            for (int i = rnd.Next(2); i >= 0; i--) form = Rotation(form1);
-            return form;
+            for (int i = 1; i >= 0; i--) form1 = Rotation(form1);
+            return form1;
         case 1:
             return form2;
         case 2:
-            for (int i = rnd.Next(2); i >= 0; i--) form = Rotation(form3);
-            return form;
+            for (int i = rnd.Next(3); i >= 0; i--) form3 = Rotation(form3);
+            return form3;
         case 3:
-            for (int i = rnd.Next(2); i >= 0; i--) form = Rotation(form4);
-            return form;
+            for (int i = rnd.Next(3); i >= 0; i--) form4 = Rotation(form4);
+            return form4;
         case 4:
-            for (int i = rnd.Next(4); i >= 0; i--) form = Rotation(form5);
-            return form;
+            for (int i = rnd.Next(5); i >= 0; i--) form5 = Rotation(form5);
+            return form5;
         case 5:
-            for (int i = rnd.Next(4); i >= 0; i--) form = Rotation(form6);
-            return form;
+            for (int i = rnd.Next(5); i >= 0; i--) form6 = Rotation(form6);
+            return form6;
         default:
             return form1;
     }
@@ -172,8 +171,13 @@ char[,] Move(char[,] field, in char[,] form, int yOs, int xOs, bool clear = fals
     return field;
 }
 
-void Print(in char[,] field)
+void Print(in char[,] field, in char[,] nextForm, int score, int level)
 {
+    string[] sidebar =
+    {
+        $"Score: {score}\t",$"Level: {level}"," ","Next:"
+    };
+
     Console.SetCursorPosition(0, 0);
     for (int i = 0; i < field.GetLength(0); i++)
     {
@@ -181,21 +185,39 @@ void Print(in char[,] field)
         {
             Console.Write(field[i, j]);
         }
+
+        if (i < sidebar.Length)
+        {
+            Console.SetCursorPosition(field.GetLength(1) + 1, i);
+            Console.Write(sidebar[i]);
+            Console.WriteLine();
+            continue;
+        }
+        if (i < nextForm.GetLength(0) + sidebar.Length)
+        {
+            Console.SetCursorPosition(field.GetLength(1) + 1, i);
+            for (int j = 0; j < nextForm.GetLength(1); j++)
+            {
+                Console.Write(nextForm[i-sidebar.Length, j]);
+            }
+        }
         Console.WriteLine();
     }
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////
 
 void Game(char[,] fieldDef)
 {
     char[,] form = new char[0, 0],
+            nextForm = new char[0, 0],
             temp = new char[0, 0],
             field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)];
     bool check;
     int x = default,
         y = default,
+        level = default,
+        score = default,
         speedDef = 500,
         speed = speedDef,
         boost = 30;
@@ -204,20 +226,28 @@ void Game(char[,] fieldDef)
     field = Rewrite(fieldDef);
     form = Forms();
     //////////////////////////////////////////////
-    while (key.Key != ConsoleKey.Escape)
+    while (true)
     {
-        form = Forms();
+        //////////////////////////////////////////////////
+        nextForm = Forms();
         x = field.GetLength(1) / 2 - form.GetLength(1) / 2;
         y = default;
         check = true;
+        //////////////////////////////////////////////////
         while (check)
         {
             Thread.Sleep(speed);
             while (Console.KeyAvailable)
                 key = Console.ReadKey(true);
-            ////////////////////////////////
+            /////////////////////////////////////////////////
             switch (key.Key)
             {
+                case ConsoleKey.P:
+                    key = Console.ReadKey(true);
+                    key = default;
+                    break;
+                case ConsoleKey.Escape:
+                    return;
                 case ConsoleKey.A:
                     key = default;
                     if (x < 1)
@@ -277,25 +307,50 @@ void Game(char[,] fieldDef)
                     }
                     break;
             }
-
+            /////////////////////////////////////////////////
             field = Move(field, form, y, x);
-            Print(field);
+            Print(field,nextForm, score, level);
 
             if (check) field = Move(field, form, y, x, check);
             else
             {
+                if (y < form.GetLength(0))
+                {
+                    char[,] gameOver =
+                    {
+                        {'#','#','#','#','#','#'},
+                        {'#','G','A','M','E','#'},
+                        {'#','#','#','#','#','#'},
+                        {'#','O','V','E','R','#'},
+                        {'#','#','#','#','#','#'}
+                    };
+
+                    field = Move(field, gameOver, field.GetLength(0) / 2 + 2, field.GetLength(1) / 2 - 3);
+                    Print(field,nextForm, score, level);
+                    return;
+                }
+                score++;
                 int[] fullRowNum = FullRowsNumber(field, y, form.GetLength(0));
                 if (fullRowNum[0] != 0)
                 {
                     char[,] clear = new char[fullRowNum.Length, field.GetLength(1) - 2];
                     field = Move(field, clear, fullRowNum[0], 1, true);
-                    Print(field);
+                    Print(field,nextForm, score, level);
                     field = DellFullRows(field, fullRowNum);
                     Thread.Sleep(50);
-                    Print(field);
+                    Print(field,nextForm, score, level);
+                    level++;
                 }
+                char[,] delOldForm = 
+                {
+                    {' ',' ',' ',' '},
+                    {' ',' ',' ',' '},
+                    {' ',' ',' ',' '},
+                    {' ',' ',' ',' '}
+                };
+                Print(field,delOldForm, score, level);
+                form = nextForm;
             }
-
         }
     }
 }
@@ -305,8 +360,8 @@ void Game(char[,] fieldDef)
 
 Console.CursorVisible = false;
 Console.Clear();
-int width = 18,
-    height = 27;
+int width = 20,
+    height = 28;
 char[,] field = new char[height, width];
 /////////////////////////////////////////////
 for (int i = 0; i < field.GetLength(0); i++)
