@@ -41,13 +41,13 @@ int[] FullRowsNumber(in char[,] field, int yOs, int heightForm)
     return fullRowsNumber.Split(' ').Select(s => Int32.Parse(s)).ToArray();
 }
 
-char[,] Rewrite(in char[,] fieldDef, in int[] fullRowsNumber = null, bool dellFullRows = false)
+char[,] Rewrite(in char[,] fieldDef, in int[]? fullRowsNumber = default, bool dellFullRows = false)
 {
     char[,] field = new char[fieldDef.GetLength(0), fieldDef.GetLength(1)];
     int count = 0;
     for (int i = field.GetLength(0) - 1, k = i; k >= 0; i--)
     {
-        if (dellFullRows && count < fullRowsNumber.Length && i == fullRowsNumber[count])
+        if (dellFullRows && count < fullRowsNumber?.Length && i == fullRowsNumber[count])
         {
             count++;
             continue;
